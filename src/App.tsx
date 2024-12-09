@@ -1,9 +1,32 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ChatInput from "./components/blocks/ChatInput";
 import Mobile from "./components/structure/Mobile";
 import ChatBubble from "./components/blocks/ChatBubble";
 import ChatScrollArea from "./components/blocks/ChatArea";
 import { AddMessage, Message, Users } from "./types";
+
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+} from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDJqINYnH3uI1FIp3Rggrpcqq7k41nasTs",
+  authDomain: "simple-chat-868c2.firebaseapp.com",
+  projectId: "simple-chat-868c2",
+  storageBucket: "simple-chat-868c2.firebasestorage.app",
+  messagingSenderId: "205006752693",
+  appId: "1:205006752693:web:905dbfa96b3c6c9e25e7fc",
+  measurementId: "G-R81XB1Z8JS",
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 export const user = {
   id: "0",
@@ -30,12 +53,6 @@ function App() {
         src: "https://mystickermania.com/cdn/stickers/anime/one-brook-heart-512x512.png",
       },
     },
-  };
-
-  const createMessageTimestamp = (offsetMinutes: number) => {
-    const nextDate = new Date(new Date().toISOString());
-    nextDate.setMinutes(nextDate.getMinutes() + offsetMinutes);
-    return nextDate.toISOString();
   };
 
   // const initialMessages: Message[] = [
@@ -98,19 +115,61 @@ function App() {
   // ];
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const addMessage: AddMessage = (message) => {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = () => {
+    anchorRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const loadMessages = async () => {
+    let messages: Message[] = [];
+    const messagesQuery = query(
+      collection(db, "messages"),
+      orderBy("timestamp", "asc"),
+    );
+    const querySnapshot = await getDocs(messagesQuery);
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      messages.push({
+        id: data.id,
+        text: data.text,
+        timestamp: data.timestamp,
+        status: data.status,
+        userId: data.userId,
+      });
+    });
+    setMessages(messages);
+    setTimeout(scrollToBottom, 500);
+  };
+
+  useEffect(() => {
+    loadMessages();
+  }, []);
+
+  const addMessage: AddMessage = async (message) => {
     setMessages([...messages, message]);
     setTimeout(
       () => anchorRef.current?.scrollIntoView({ behavior: "smooth" }),
       500,
     );
+
+    try {
+      const docRef = await addDoc(collection(db, "messages"), {
+        id: message.id,
+        text: message.text,
+        timestamp: message.timestamp,
+        status: message.status,
+        userId: message.userId,
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   };
   const [activeMessageId, setActiveMessageId] = useState<string>("");
   const setActiveMessage = (messageId: string) => {
     setActiveMessageId(messageId);
   };
-
-  const anchorRef = useRef<HTMLDivElement>(null);
 
   const getUserById = (userId: string) => users[userId] || null;
 

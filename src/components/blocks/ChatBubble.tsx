@@ -1,5 +1,4 @@
 import cx from "classnames";
-import { useState } from "react";
 
 interface Props {
   user: {
@@ -27,7 +26,7 @@ function ChatBubble(props: Props) {
   const { id: userId, name, avatar } = user;
   const { src: avatarSrc } = avatar;
 
-  const { id: messageId, text, timestamp, status } = message;
+  const { id: messageId, text, timestamp } = message;
 
   const time = new Date(timestamp).toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -36,6 +35,10 @@ function ChatBubble(props: Props) {
   });
 
   const classNames = {
+    container: () => {
+      if (__userIsMe) return "flex flex-col items-end";
+      return "flex flex-col items-start";
+    },
     bubble: () => {
       if (__userIsMe)
         return "border-gray-200 bg-blue-500 dark:bg-blue-700 ml-auto hover:bg-blue-600 dark:hover:bg-blue-800";
@@ -50,6 +53,10 @@ function ChatBubble(props: Props) {
       if (__userIsMe) return "text-white";
       return "";
     },
+    meTime: () => {
+      if (__userIsMe) return "ml-auto";
+      return "";
+    },
     time: () => {
       if (__isActive) return "opacity-1 mt-1 mb-4";
       return "opacity-0 mt-1";
@@ -57,7 +64,7 @@ function ChatBubble(props: Props) {
   };
 
   return (
-    <div className="flex flex-col items-end">
+    <div className={classNames.container()}>
       <div className=" flex items-start gap-2.5">
         {!__userIsMe && (
           <img
@@ -67,40 +74,52 @@ function ChatBubble(props: Props) {
             data-user-id={userId}
           />
         )}
-        <div
-          className={cx(
-            "leading-1.5 flex w-full max-w-[260px] flex-col rounded-e-xl rounded-es-xl p-4 transition-all",
-            classNames.bubble(),
-            classNames.bubbleIsActive(),
-          )}
-          onClick={() => setActiveMessage(__isActive ? "" : messageId)}
-          data-message-id={messageId}
-        >
-          <div className="flex items-center space-x-2 rtl:space-x-reverse">
-            <span
+        <div className="flex flex-col">
+          <div
+            className={cx(
+              "leading-1.5 flex w-full max-w-[260px] flex-col rounded-e-xl rounded-es-xl px-4 py-1 transition-all",
+              classNames.bubble(),
+              classNames.bubbleIsActive(),
+            )}
+            onClick={() => setActiveMessage(__isActive ? "" : messageId)}
+            data-message-id={messageId}
+          >
+            {!__userIsMe && (
+              <div className="flex items-center space-x-2 pt-2 rtl:space-x-reverse">
+                <span
+                  className={cx(
+                    "text-sm font-semibold text-gray-900 dark:text-white",
+                  )}
+                >
+                  {name}
+                </span>
+              </div>
+            )}
+            <p
               className={cx(
-                "text-sm font-semibold text-gray-900 dark:text-white",
+                "py-2.5 text-sm font-normal text-gray-900 dark:text-white",
                 classNames.meText(),
               )}
             >
-              {__userIsMe ? "Me" : name}
-            </span>
-          </div>
-          <p
-            className={cx(
-              "py-2.5 text-sm font-normal text-gray-900 dark:text-white",
-              classNames.meText(),
-            )}
-          >
-            {text}
-          </p>
-          <span
+              {text}
+            </p>
+            {/* <span
             className={cx(
               "text-sm font-normal text-gray-500 dark:text-gray-400",
               classNames.meText(),
             )}
           >
             {status}
+          </span> */}
+          </div>
+          <span
+            className={cx(
+              "text-xs font-normal text-gray-500 transition-all dark:text-gray-400",
+              classNames.time(),
+              classNames.meTime(),
+            )}
+          >
+            {time}
           </span>
         </div>
         {/* <button
@@ -155,14 +174,6 @@ function ChatBubble(props: Props) {
         </ul>
       </div> */}
       </div>
-      <span
-        className={cx(
-          "text-xs font-normal text-gray-500 transition-all dark:text-gray-400",
-          classNames.time(),
-        )}
-      >
-        {time}
-      </span>
     </div>
   );
 }
