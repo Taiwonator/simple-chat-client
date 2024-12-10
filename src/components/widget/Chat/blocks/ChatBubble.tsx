@@ -1,13 +1,9 @@
 import cx from "classnames";
+import { User as AppUser } from "../../../../types";
+import { useState, useEffect } from "react";
 
 interface Props {
-  user: {
-    id: string;
-    name: string;
-    avatar: {
-      src: string;
-    };
-  };
+  user: AppUser | null;
   message: {
     id: string;
     text: string;
@@ -20,6 +16,12 @@ interface Props {
 }
 
 function ChatBubble(props: Props) {
+  const [containerClass, setContainerClass] = useState<string>("")
+
+  useEffect(() => {
+    setTimeout(() => setContainerClass("opacity-100"), 1000)
+  }, [])
+
   const { user, message, __userIsMe, __isActive, setActiveMessage } = props;
   if (!user || !message) return null;
 
@@ -36,8 +38,8 @@ function ChatBubble(props: Props) {
 
   const classNames = {
     container: () => {
-      if (__userIsMe) return "flex flex-col items-end";
-      return "flex flex-col items-start";
+      if (__userIsMe) return "items-end";
+      return "items-start";
     },
     bubble: () => {
       if (__userIsMe)
@@ -64,11 +66,11 @@ function ChatBubble(props: Props) {
   };
 
   return (
-    <div className={classNames.container()}>
+    <div className={cx("flex transition-opacity duration-500 flex-col opacity-0", classNames.container(), containerClass)}>
       <div className=" flex items-start gap-2.5">
         {!__userIsMe && (
           <img
-            className="h-8 w-8 rounded-full object-cover"
+            className="size-8 rounded-full object-cover"
             src={avatarSrc}
             alt={`${name}'s avatar`}
             data-user-id={userId}
