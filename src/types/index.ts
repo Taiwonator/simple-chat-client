@@ -1,3 +1,5 @@
+import { User as FirebaseUser } from "firebase/auth";
+
 export interface UserAvatar {
   src: string;
 }
@@ -20,4 +22,21 @@ export interface Message {
   userId: string;
 }
 
-export type AddMessage = (message: Message) => void;
+export interface ResolvedMessage extends Message {
+  __user: User | null;
+  __isFirstOfTheDay: boolean;
+}
+
+export type CreateUser = (user: FirebaseUser, name: string, avatarSrc: string) => Promise<User>;
+
+export type AddMessage = (message: ResolvedMessage) => void;
+
+export type Login = (name: string, avatarSrc: string) => void;
+
+export type Logout = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+
+export type SetUser = React.Dispatch<React.SetStateAction<User | null>>
+
+export type FindUserById = (userId: string) => Promise<User | null>;
+
+export type FindOrInsertUser = (user: FirebaseUser) => Promise<User>;

@@ -1,198 +1,128 @@
-import { useState, useRef, useEffect } from "react";
-import ChatInput from "./components/blocks/ChatInput";
-import Mobile from "./components/structure/Mobile";
-import ChatBubble from "./components/blocks/ChatBubble";
-import ChatScrollArea from "./components/blocks/ChatArea";
-import { AddMessage, Message, Users } from "./types";
-
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { useState, useEffect } from "react";
+import Chat from "./components/widget/Chat";
+import Form from "./components/widget/Form";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { UserContext } from "./context/UserContext";
+import { User as AppUser, CreateUser, FindOrInsertUser, Login } from "./types";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDJqINYnH3uI1FIp3Rggrpcqq7k41nasTs",
-  authDomain: "simple-chat-868c2.firebaseapp.com",
-  projectId: "simple-chat-868c2",
-  storageBucket: "simple-chat-868c2.firebasestorage.app",
-  messagingSenderId: "205006752693",
-  appId: "1:205006752693:web:905dbfa96b3c6c9e25e7fc",
-  measurementId: "G-R81XB1Z8JS",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
-export const user = {
-  id: "0",
-  name: "Michael Taiwo",
-  avatar: {
-    src: "https://avatars.githubusercontent.com/u/22432591?v=4&size=64",
-  },
-};
-
 function App() {
-  const users: Users = {
-    "0": user,
-    "1": {
-      id: "1",
-      name: "Luffy",
-      avatar: {
-        src: "https://static.tvtropes.org/pmwiki/pub/images/straw_hat_pirates_jolly_roger.png",
-      },
-    },
-    "2": {
-      id: "2",
-      name: "Brook",
-      avatar: {
-        src: "https://mystickermania.com/cdn/stickers/anime/one-brook-heart-512x512.png",
-      },
-    },
-  };
-
-  // const initialMessages: Message[] = [
-  //   {
-  //     id: "1",
-  //     text: "Hey Lena, have you seen the latest episode?",
-  //     timestamp: createMessageTimestamp(1),
-  //     status: "Sent",
-  //     userId: "1",
-  //   },
-  //   {
-  //     id: "2",
-  //     text: "Hey Jese! I did, can you believe that twist?",
-  //     timestamp: createMessageTimestamp(2),
-  //     status: "Sent",
-  //     userId: "2",
-  //   },
-  //   {
-  //     id: "3",
-  //     text: "Right?! I didn’t see that coming at all.",
-  //     timestamp: createMessageTimestamp(3),
-  //     status: "Sent",
-  //     userId: "1",
-  //   },
-  //   {
-  //     id: "4",
-  //     text: "Same here! Let’s chat more after I finish work?",
-  //     timestamp: createMessageTimestamp(4),
-  //     status: "Sent",
-  //     userId: "2",
-  //   },
-  //   {
-  //     id: "5",
-  //     text: "Hey peeps! What’s up?",
-  //     timestamp: createMessageTimestamp(5),
-  //     status: "Sent",
-  //     userId: "0",
-  //   },
-  //   {
-  //     id: "6",
-  //     text: "Hey Michael! We’re just talking about the latest episode.",
-  //     timestamp: createMessageTimestamp(6),
-  //     status: "Sent",
-  //     userId: "1",
-  //   },
-  //   {
-  //     id: "7",
-  //     text: "I haven’t seen it yet. No spoilers!",
-  //     timestamp: createMessageTimestamp(7),
-  //     status: "Sent",
-  //     userId: "0",
-  //   },
-  //   {
-  //     id: "8",
-  //     text: "No worries, I won’t spoil it for you.",
-  //     timestamp: createMessageTimestamp(8),
-  //     status: "Sent",
-  //     userId: "2",
-  //   },
-  // ];
-
-  const [messages, setMessages] = useState<Message[]>([]);
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const scrollToBottom = () => {
-    anchorRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const loadMessages = async () => {
-    let messages: Message[] = [];
-    const messagesQuery = query(
-      collection(db, "messages"),
-      orderBy("timestamp", "asc"),
-    );
-    const querySnapshot = await getDocs(messagesQuery);
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      messages.push({
-        id: data.id,
-        text: data.text,
-        timestamp: data.timestamp,
-        status: data.status,
-        userId: data.userId,
-      });
-    });
-    setMessages(messages);
-    setTimeout(scrollToBottom, 500);
-  };
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadMessages();
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('fireBaseUser', firebaseUser)
+      if (firebaseUser) {
+        console.log('FirebaseUser is signed in', firebaseUser);
+        const appUser = await findOrInsertUser(firebaseUser);
+        console.log('appUser', appUser)
+        setUser(appUser);
+      } else {
+        console.log('FirebaseUser is signed out');
+        setUser(null);
+      }
+      console.log('isLoading', isLoading)
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const addMessage: AddMessage = async (message) => {
-    setMessages([...messages, message]);
-    setTimeout(
-      () => anchorRef.current?.scrollIntoView({ behavior: "smooth" }),
-      500,
-    );
+  const login: Login = (name, avatarSrc) => {
+    setIsLoading(true)
+    signInAnonymously(auth).then((credentials) => {
+      createUser(credentials.user, name, avatarSrc)
+      console.log('isLoading', isLoading)
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error(errorCode, errorMessage)
+    });
+  }
 
-    try {
-      const docRef = await addDoc(collection(db, "messages"), {
-        id: message.id,
-        text: message.text,
-        timestamp: message.timestamp,
-        status: message.status,
-        userId: message.userId,
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
+  const logout = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault()
+    auth.signOut().then(() => {
+      setUser(null)
+    }).catch((error) => {
+      console.error('Error signing out', error)
+    });
+  }
+
+  const createUser: CreateUser = async (user, name, avatarSrc) => {
+    const userRef = doc(db, "users", user.uid);
+    const newUser: AppUser = {
+      id: user.uid, name,
+      avatar: { src: avatarSrc },
+    };
+    await setDoc(userRef, newUser);
+    return newUser;
+  }
+
+  const findUserById = async (userId: string) => {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      return userSnap.data() as AppUser;
+    } else {
+      return null;
     }
-  };
-  const [activeMessageId, setActiveMessageId] = useState<string>("");
-  const setActiveMessage = (messageId: string) => {
-    setActiveMessageId(messageId);
-  };
+  }
 
-  const getUserById = (userId: string) => users[userId] || null;
+  const findOrInsertUser: FindOrInsertUser = async (user) => {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    console.log('userSnap', userSnap)
+    if (userSnap.exists()) {
+      console.log('userSnap.data()', userSnap.data())
+      return userSnap.data() as AppUser;
+    } else {
+      const newUser = await createUser(user, "Anonymous User", "/avatars/bottts-0.png");
+      console.log('newUser', newUser)
+      return newUser
+    }
+  }
 
   return (
-    <main className="flex min-h-screen items-center justify-center gap-2 dark:bg-gray-800">
-      <Mobile>
-        <ChatScrollArea>
-          {messages.map((message) => {
-            return (
-              <ChatBubble
-                key={message.id}
-                user={getUserById(message.userId)}
-                message={message}
-                setActiveMessage={setActiveMessage}
-                __isActive={activeMessageId === message.id}
-                __userIsMe={message.userId === user.id}
-              />
-            );
-          })}
-          <div id="anchor" ref={anchorRef} />
-        </ChatScrollArea>
-        <ChatInput addMessage={addMessage} />
-      </Mobile>
+    <main className="relative flex min-h-svh items-center justify-center gap-2 dark:bg-gray-800">
+      { isLoading && (
+        <div className="flex size-56 items-center justify-center rounded-lg">
+            <div role="status">
+                <svg aria-hidden="true" className="size-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/></svg>
+                <span className="sr-only">Loading...</span>
+            </div>
+        </div>
+      )}
+      {!isLoading && (
+        <UserContext.Provider value={{
+          user,
+          logout,
+          setUser,
+          findUserById
+        }}>
+          <div className="flex h-svh flex-col items-center gap-2">
+            <Chat firebaseApp={firebaseApp} isBlurred={!user}  />
+          </div>
+        </UserContext.Provider>
+      )}
+      {!isLoading && !user && <Form login={login} />} 
     </main>
   );
 }
