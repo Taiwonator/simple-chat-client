@@ -62,7 +62,7 @@ const Form = ({ login }: Props) => {
         <div className="relative rounded-lg bg-white shadow dark:bg-gray-700">
           <div className="flex items-center justify-between rounded-t border-b bg-black p-4 dark:border-gray-600 md:p-5">
             <h3 className="text-xl font-semibold text-white dark:text-white">
-              Join a Chatroom
+              Join the Chatroom
             </h3>
           </div>
           <div className="py-4 md:py-5">
