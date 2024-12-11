@@ -38,7 +38,7 @@ const DayBubble: React.FC<DayBubbleProps> = ({ timestamp }) => {
   };
 
   return (
-    <span className={`mb-4 self-center rounded-lg bg-green-200 px-3 py-2 text-center text-xs font-medium text-black dark:bg-blue-600 ${containerClass}`}>
+    <span className={`mb-4 self-center rounded-lg bg-green-200 px-3 py-2 text-center text-xs font-medium text-black opacity-0 transition-opacity duration-500 dark:bg-blue-600 ${containerClass}`}>
       {formatDate(timestamp)}
     </span>
   );
