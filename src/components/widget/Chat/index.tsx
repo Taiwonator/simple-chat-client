@@ -63,6 +63,7 @@ function Chat({ firebaseApp, isBlurred }: Props) {
         ...message,
         __isFirstOfTheDay: firstOfTheDayMap[createKey(message.timestamp)] === message.id
       }))
+      console.log('firstOfTheDayMap', firstOfTheDayMap)
       setMessages(newMessages);
       if(!isBlurred) setTimeout( () => scrollToBottom(), 500 );
     });
