@@ -1,21 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import cx from 'classnames';
+import React, { useEffect, useState } from 'react';
 
 interface DayBubbleProps {
   timestamp: string;
 }
 
 const DayBubble: React.FC<DayBubbleProps> = ({ timestamp }) => {
-    const [containerClass, setContainerClass] = useState<string>("")
+  const [containerClass, setContainerClass] = useState<string>("");
 
-    useEffect(() => {
-      setTimeout(() => setContainerClass("opacity-100"), 1000)
-    }, [])
+  useEffect(() => {
+    setTimeout(() => setContainerClass("opacity-100"), 1000);
+  }, []);
+
+  const stripTime = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  };
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const strippedDate = stripTime(date);
+    const strippedNow = stripTime(now);
+
+    const diffTime = Math.abs(strippedNow.getTime() - strippedDate.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
@@ -25,15 +31,15 @@ const DayBubble: React.FC<DayBubbleProps> = ({ timestamp }) => {
     } else if (diffDays <= 4) {
       return date.toLocaleDateString('en-US', { weekday: 'long' });
     } else {
-        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-        const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
-        return formattedDate.replace(',', '');
+      const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+      const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
+      return formattedDate.replace(',', '');
     }
   };
 
   return (
-    <span className={cx("transition-opacity duration-500 opacity-0 mb-4 self-center rounded-lg bg-gray-300 px-3 py-2 text-center text-xs font-semibold text-gray-900 dark:bg-blue-600", containerClass)}>
-        {formatDate(timestamp)}
+    <span className={`mb-4 self-center rounded-lg bg-green-200 px-3 py-2 text-center text-xs font-medium text-black dark:bg-blue-600 ${containerClass}`}>
+      {formatDate(timestamp)}
     </span>
   );
 };
