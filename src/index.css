@@ -5,3 +5,33 @@
 html {
     height: -webkit-fill-available;
 }
+
+.chat-input-wrapper {
+    position: relative;
+}
+
+.chat-input-wrapper textarea {
+    width: 200px;
+}
+
+.chat-input-wrapper.agent-mode::after {
+    content: '@agent';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 16px;
+    background: rgb(28, 100, 242);
+    padding: 0 4px;
+    color: white;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.chat-input-wrapper.agent-mode textarea {
+    padding-left: 72px;
+}
+
+.chat-input-wrapper.agent-typing textarea {
+    color: rgb(28, 100, 242);
+    font-weight: bold;
+}
