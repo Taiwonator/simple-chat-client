@@ -21,6 +21,7 @@ function ChatInput({ addMessage }: Props) {
   const { user, logout } = useContext(UserContext);
   const [isAgentMode, setIsAgentMode] = useState(false);
   const [isTypingAgent, setIsTypingAgent] = useState(false);
+  const [isTypedAgent, setIsTypedAgent] = useState(false)
 
   useEffect(() => {
     initFlowbite();
@@ -28,10 +29,56 @@ function ChatInput({ addMessage }: Props) {
 
   const sendMessage = () => {
     if (isAgentMode) {
-      alert("Agent request: " + value);
       setValue("");
       setIsAgentMode(false);
-      return;
+
+      (async () => {
+        const res = await fetch(`http://127.0.0.1:8000/action`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: value
+          }),
+        })
+        if (!res.ok) {
+          console.log('An error probably occured')
+        }
+        const data = await res.json()
+        console.log('data: ', data)
+
+        if (!data?.model_response?.type) {
+          console.log('Agent sent back a spookey unexpected response')
+          return
+        }
+
+        switch (data.model_response.type) {
+          case 'answer':
+            alert(data.model_response.message)
+            break;
+          case 'write_message':
+            if (data.model_response.message && user) {
+              addMessage({
+                id: nid(20),
+                text: data.model_response.message,
+                timestamp: new Date().toISOString(),
+                status: "Sent",
+                userId: user.id,
+                reactions: {},
+                __user: user,
+                __isFirstOfTheDay: false,
+              });
+              setValue("");
+            }
+            break
+          default:
+            console.log('Looks like Gemini hallucinated')
+            break;
+        }
+      })()
+
+      return
     }
 
     if (value && user) {
@@ -41,6 +88,7 @@ function ChatInput({ addMessage }: Props) {
         timestamp: new Date().toISOString(),
         status: "Sent",
         userId: user.id,
+        reactions: {},
         __user: user,
         __isFirstOfTheDay: false,
       });
@@ -57,6 +105,12 @@ function ChatInput({ addMessage }: Props) {
     } else {
       setIsTypingAgent(false);
     }
+
+    if (targetValue === "@agent" && !isAgentMode) {
+      setIsTypedAgent(true)
+    } else {
+      setIsTypedAgent(false)
+    }
   };
 
   const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -64,6 +118,8 @@ function ChatInput({ addMessage }: Props) {
     // When value is empty and backspce is clicked, should disable agent mode if agent mode is true
     if (e.key === "Backspace" && value === "" && isAgentMode) {
       setIsAgentMode(false);
+      setIsTypingAgent(false);
+      setIsTypedAgent(false)
       return;
     }
 
@@ -74,11 +130,12 @@ function ChatInput({ addMessage }: Props) {
       if (value === "@agent" && !isAgentMode) {
         setIsAgentMode(true);
         setIsTypingAgent(false);
+        setIsTypedAgent(false)
         setValue("");
         return;
       }
 
-      // Default behaviour 
+      // Default behaviour
       sendMessage();
     }
   };
@@ -133,6 +190,7 @@ function ChatInput({ addMessage }: Props) {
           "chat-input-wrapper",
           isAgentMode && "agent-mode",
           isTypingAgent && "agent-typing",
+          isTypedAgent && "agent-typed"
         )}>
           <textarea
             id="chat"

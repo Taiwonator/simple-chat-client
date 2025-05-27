@@ -14,15 +14,28 @@ html {
     width: 200px;
 }
 
-.chat-input-wrapper.agent-mode::after {
+.chat-input-wrapper.agent-mode::before {
     content: '@agent';
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     left: 16px;
-    background: rgb(28, 100, 242);
+    background: rgb(188 240 218);
     padding: 0 4px;
-    color: white;
+    color: black;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.chat-input-wrapper.agent-typed::after {
+    content: 'Enter';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 72px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0 4px;
+    color: rgba(0, 0, 0, 0.4);
     font-size: 12px;
     border-radius: 4px;
 }
@@ -32,6 +45,5 @@ html {
 }
 
 .chat-input-wrapper.agent-typing textarea {
-    color: rgb(28, 100, 242);
-    font-weight: bold;
+    font-weight: bolder;
 }

@@ -1,6 +1,7 @@
 import cx from "classnames";
-import { User as AppUser } from "../../../../types";
+import { User as AppUser, MessageReactions as MessageReactionsType, ToggleReaction } from "../../../../types";
 import { useState, useEffect } from "react";
+import MessageReactions from "./MessageReactions";
 
 interface Props {
   user: AppUser | null;
@@ -9,10 +10,12 @@ interface Props {
     text: string;
     timestamp: string;
     status: string;
+    reactions?: MessageReactionsType;
   };
   __userIsMe?: boolean;
   __isActive?: boolean;
   setActiveMessage: (messageId: string) => void;
+  toggleReaction: ToggleReaction;
 }
 
 function ChatBubble(props: Props) {
@@ -22,13 +25,13 @@ function ChatBubble(props: Props) {
     setTimeout(() => setContainerClass("opacity-100"), 1000)
   }, [])
 
-  const { user, message, __userIsMe, __isActive, setActiveMessage } = props;
+  const { user, message, __userIsMe, __isActive, setActiveMessage, toggleReaction } = props;
   if (!user || !message) return null;
 
   const { id: userId, name, avatar } = user;
   const { src: avatarSrc } = avatar;
 
-  const { id: messageId, text, timestamp } = message;
+  const { id: messageId, text, timestamp, reactions } = message;
 
   const time = new Date(timestamp).toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -123,6 +126,14 @@ function ChatBubble(props: Props) {
           >
             {time}
           </span>
+
+          {/* Message reactions */}
+          <MessageReactions
+            messageId={messageId}
+            reactions={reactions}
+            toggleReaction={toggleReaction}
+            isUserMessage={!!__userIsMe}
+          />
         </div>
         {/* <button
         id="dropdownMenuIconButton"
