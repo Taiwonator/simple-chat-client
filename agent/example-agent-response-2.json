@@ -1,0 +1,29 @@
+{'messages': [HumanMessage(content='what do you know about London, and what is 2+10, and What is 20-100. You can see 20-100 as a +- operation to help you', additional_kwargs={}, response_metadata={}, id='5799b2c6-3bdf-4c29-b2d6-347c9fe885e0'), AIMessage(content='', additional_kwargs={'function_call': {'name': 'do_addition', 'arguments': '{
+                    "a": 20.0,
+                    "b": -100.0
+                }'
+            }
+        }, response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []
+            }, 'finish_reason': 'STOP', 'safety_ratings': []
+        }, id='run--34ab7edb-d8cc-479b-a1ec-d2d10b8cd6e0-0', tool_calls=[
+            {'name': 'get_weather', 'args': {'city': 'London'
+                }, 'id': '4a143a20-a07a-4feb-ac87-5faac2c87ca2', 'type': 'tool_call'
+            },
+            {'name': 'get_time', 'args': {'city': 'London'
+                }, 'id': 'c2edf317-1614-44c4-bd20-0b354fc5861a', 'type': 'tool_call'
+            },
+            {'name': 'do_addition', 'args': {'a': 2.0, 'b': 10.0
+                }, 'id': '089ffdd4-6605-46a7-b011-13d0d2f96346', 'type': 'tool_call'
+            },
+            {'name': 'do_addition', 'args': {'a': 20.0, 'b': -100.0
+                }, 'id': '2e308abc-4243-45f0-bcca-56a23ce90c53', 'type': 'tool_call'
+            }
+        ], usage_metadata={'input_tokens': 112, 'output_tokens': 24, 'total_tokens': 136, 'input_token_details': {'cache_read': 0
+            }
+        }), ToolMessage(content="It's always sunny in London", name='get_weather', id='20adb7eb-e465-48fd-ad36-8af5772d6bd3', tool_call_id='4a143a20-a07a-4feb-ac87-5faac2c87ca2'), ToolMessage(content='The time is whatever you want it to be in London', name='get_time', id='b9eda6dd-5188-48df-afe6-96e6a0226341', tool_call_id='c2edf317-1614-44c4-bd20-0b354fc5861a'), ToolMessage(content='12', name='do_addition', id='bb8c713b-f8f3-433f-8118-aa95467c5775', tool_call_id='089ffdd4-6605-46a7-b011-13d0d2f96346'), ToolMessage(content='-80', name='do_addition', id='9b93e0f3-9af0-4374-8f6d-c52a681df941', tool_call_id='2e308abc-4243-45f0-bcca-56a23ce90c53'), AIMessage(content="Here's what I know about London: The weather is always sunny, and the time is whatever you want it to be.\n\nAlso, 2 + 10 = 12, and 20 - 100 = -80.", additional_kwargs={}, response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []
+            }, 'finish_reason': 'STOP', 'safety_ratings': []
+        }, id='run--45ecf486-62fc-4f0d-a32a-c911bbc5313e-0', usage_metadata={'input_tokens': 172, 'output_tokens': 55, 'total_tokens': 227, 'input_token_details': {'cache_read': 0
+            }
+        })
+    ]
+}

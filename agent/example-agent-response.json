@@ -1,0 +1,8 @@
+{'messages': [HumanMessage(content='what is the weather in {request.city
+        }', additional_kwargs={}, response_metadata={}, id='2015a5a2-15c7-4894-a79f-e335331b010e'), AIMessage(content='', additional_kwargs={}, response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []
+            }, 'finish_reason': 'MALFORMED_FUNCTION_CALL', 'safety_ratings': []
+        }, id='run--1dfb90ef-982d-40bd-ba7e-69f5cfceff47-0', usage_metadata={'input_tokens': 35, 'output_tokens': 0, 'total_tokens': 35, 'input_token_details': {'cache_read': 0
+            }
+        })
+    ]
+}
